@@ -69,6 +69,24 @@ function get_log() {
     return $log;    
 }
 
+/* Get a list of all known users.*/
+function get_users() {
+    global $sysdir;
+    $out = Array();
+    if ($handle = opendir($sysdir."data")) {
+        /* This is the correct way to loop over the directory. */
+        while (false !== ($file = readdir($handle))) {
+            if(preg_match('/^user_(.+).json$/',$file,$m)) {
+                $username = $m[1];
+		$out[] = $username;
+                sort($out);
+            }
+        }
+        closedir($handle);
+    }
+    return $out;
+}
+
 function get_delegations() {
     global $sysdir;
     $out = Array();

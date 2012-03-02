@@ -38,6 +38,7 @@ mercury.config.urlAbort = "list.html";
 mercury.config.urlLogin = "login.html";
 mercury.config.urlReport = "php/report.php";
 mercury.config.urlAudit = "php/audit.php";
+mercury.config.urlImpersonate = "php/impersonate.php";
 
 
 // Config > Calendar
@@ -251,6 +252,7 @@ mercury.common.login_link = function() {
 	mercury.common.get_user(function(user) {
 
 		// TITLE BAR
+		var isImpersonating = (user.user != user.realuser);
 
 		var out = '';
 		var home = "<a href='list.html'>home</a>";
@@ -258,13 +260,16 @@ mercury.common.login_link = function() {
 			home = "";
 		}
 		if(user.loggedin) {
-			out = "Hello "+user.user+". <a href='index.html'>intro</a> "+home+" <a href='php/logout.php'>logout</a>"+
+			out = "Hello " + user.user +
+	  		      (isImpersonating ? " (impersonated)" : "") +
+			      ". <a href='index.html'>intro</a> "+home+" <a href='php/logout.php'>logout</a>"+
 			      " <a class='user_delegate' href='javascript:;'>delegate</a>"+
 			      " <a class='user_rescind' href='javascript:;'>rescind</a>"+
 			      " <a href='log.html'>log</a>";
 		} else {
 			out = "<a href='index.html'>intro</a> "+home+" <a href='php/login.php'>admin login</a>";
 		}
+		
 
         // dialog common
         function dialog(name,options) {
@@ -308,6 +313,14 @@ mercury.common.login_link = function() {
 		
         // INSERT
         jQuery('#link_login').html(out);
+		
+		// If the user is a super-user then give them a drop down of people
+		// who they can impersonate.
+		if(user.realperms && user.realperms.all) {
+			jQuery('#link_login')
+				.append('<span style="padding: 0 10px;">Impersonate user:</span>')
+				.append(mercury.common.user_select(user.all_users));
+		}	
 
         post_dialog('delegate',function(whom,which) {
             mercury.common.delegate(whom,which,function(success) {
@@ -324,6 +337,30 @@ mercury.common.login_link = function() {
             });            
         });
 	});
+};
+
+mercury.common.user_select = function (users) {
+	var select = $('<select id="impersonate"><option><!--empty--></option></select>');
+	$.each(users, function(i, user) {
+		select.append("<option>" + user + "</option>");
+	});
+	select.change(function (e) {
+		console.log(e);
+		mercury.common.impersonate_user($(e.target).val());
+	});
+	return select;
+};
+
+mercury.common.impersonate_user = function (user) {
+	if(!user) {
+		return;
+	}
+	// Kind of hack: go to impersonate page and have it redirect us back
+	// to the current page when the impersonation is done. This is to avoid
+	// having to carefully update all the page state after an ajax request...
+	window.location = mercury.config.urlImpersonate + "?who=" +
+			encodeURIComponent(user) + "&redirect=" +
+			encodeURIComponent(window.location);
 };
 
 mercury.common.print_messages = function(data) {

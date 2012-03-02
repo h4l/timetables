@@ -9,8 +9,10 @@ $perms = null;
 if(test_user()) {
 	$out['loggedin'] = true;
 	$out['user'] = current_user();
+	$out['realuser'] = current_user(True);
     $perms = get_perms($out['user']);
 	$out['perms'] = $perms;
+	$out['realperms'] = get_perms($out['realuser']);
 } else {
 	$out['loggedin'] = false;
 }
@@ -24,6 +26,7 @@ if($perms['all']) {
 
 $out['triposes'] = get_triposes($triposes);
 $out['colour'] = $colour;
+$out['all_users'] = get_users();
 
 header('Cache-Control: no-cache, must-revalidate');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
