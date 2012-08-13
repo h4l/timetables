@@ -5,22 +5,23 @@ require_once 'config.php';
 
 $errors = new myErrorHandling();
 $renderer = new myRenderer();
-
-
-$tripos = $_SERVER['PATH_INFO'];
+$tripos = "";
+if ( isset($_SERVER['PATH_INFO']) ){
+	$tripos = $_SERVER['PATH_INFO'];
+}
 while(strlen($tripos) && (substr($tripos,0,1)=='/' || substr($tripos,0,1)=='\\'))
     $tripos = substr($tripos,1);
 $term = $_GET['term'];
 
 function load($id) {
     global $sysdir,$errors;
-    $response;
+    $response = "";
     $file = $sysdir."data/cal_".$id.".json";
     if (file_exists($file)) {
 	$response = json_decode(file_get_contents($file));
     }
     else{
-	$errors->addErrors("Delete failed: file does not exist: ".$file, "VIEW");
+	$errors->addErrors("Load failed: file does not exist: ".$file, "VIEW");
     }
     
     return $response;
