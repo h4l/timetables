@@ -24,7 +24,7 @@ class myPythonHandler {
 			$fh = fopen($myFile, 'a+') or $errors->addErrors("can't open file: ".$myFile) ;
 			
 			if(!$errors->hasError()){
-				$stringData = 'CMD:'.$cmd."\n";
+				$stringData = "date:".date("Y-m-d g:i")."\nCMD:".$cmd."\n";
 				fwrite($fh, $stringData);
 				$stringData = 'stdout:'.$stdout."\n";
 				fwrite($fh, $stringData);
@@ -34,7 +34,7 @@ class myPythonHandler {
 				fwrite($fh, $stringData);
 				fclose($fh);
 			}
-			$errors->addErrors("Python failed: ".$cmd.": ".$stderr);
+			$errors->addErrors("Python failed: ".$cmd.": ".$stderr.":".$stdout);
 		}
 		return array('stdout'=>$stdout, 
 			'stderr'=>$stderr, 
