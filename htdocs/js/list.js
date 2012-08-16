@@ -13,6 +13,7 @@ mercury.c.$select_container = $("#select_container");
 mercury.c.$select_year = $("#select_year");
 mercury.c.$select_tripos = $("#select_tripos");
 mercury.c.$select_part = $("#select_part");
+mercury.c.$select_everything = $("#select_everything");
 mercury.c.$courselist_container = $("#list_container");
 mercury.c.$page_title = $(".page-title");
 mercury.c.$courselist = $("#courselist");
@@ -23,6 +24,17 @@ mercury.c.$static_timetables = $("#static_timetables");
 // Interactivity wireing
 mercury.list.wire = function() {
 
+//add third drop down to show everything
+    $("#select_everything").bind("change", function(e){
+        mercury.data.selectedYear = mercury.c.$select_year.val();
+	var bits = mercury.c.$select_everything.val().split("::");
+	mercury.data.selectedTriposPartID = bits[1];
+	mercury.data.selectedTripos = bits[0];
+
+	mercury.list.pushState();
+	mercury.list.renderSelectors();
+	mercury.list.renderCourseList();
+    });
     // When select fields are changed
     $("#select_year,#select_tripos,#select_part").bind("change", function(e){
 
@@ -92,6 +104,29 @@ mercury.list.renderSelectors = function() {
     });
     mercury.c.$select_part.html(phtml);
 
+    //Render everything selection
+    var ehtml = '';
+    var sortedtripoi = {};
+    var sortem = [];
+    _.each(mercury.data.selector[mercury.data.selectedYear], function(tdata, tripos){
+        var selected = (mercury.data.selectedTripos === tripos) ? 'selected="true"' : "";
+     	_.each(mercury.data.selector[mercury.data.selectedYear][tripos], function(part, partid){
+        	//var selected = (mercury.data.selectedTriposPartID === partid) ? 'selected="true"' : "";
+		sortem.push(part.name);
+		sortedtripoi[part.name] = tripos+'::'+partid;
+        	//ehtml += '<option value="'+partid+'" '+selected+'>'+part.name+'</option>';
+    	});
+    });
+    sortem.sort();
+    for (key = 0; key < sortem.length; key++) {
+	var partname = sortem[key];
+	var partid = sortedtripoi[partname];
+	var bits = partid.split("::");
+	var selected = (mercury.data.selectedTriposPartID === bits[1]) ? 'selected="true"' : "";
+	ehtml += '<option value="'+partid+'" '+selected+'>'+partname+'</option>';
+    }
+    
+    mercury.c.$select_everything.html(ehtml);
 };
 
 mercury.list.cached_calendars = {};
